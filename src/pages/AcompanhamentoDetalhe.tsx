@@ -23,6 +23,19 @@ export default function AcompanhamentoDetalhe() {
   const [recursoFilter, setRecursoFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
 
+  // Collect unique resource names across all tasks
+  const allRecursos = useMemo(() => {
+    if (!contrato) return [];
+    const names = new Set<string>();
+    contrato.etapas.forEach((e) =>
+      e.tarefas.forEach((t) => {
+        names.add(t.recursoResponsavel);
+        t.recursos.forEach((r) => names.add(r.nome));
+      })
+    );
+    return Array.from(names).sort();
+  }, [contrato]);
+
   if (!contrato) {
     return (
       <div className="p-8 text-center text-muted-foreground">
@@ -33,18 +46,6 @@ export default function AcompanhamentoDetalhe() {
       </div>
     );
   }
-
-  // Collect unique resource names across all tasks
-  const allRecursos = useMemo(() => {
-    const names = new Set<string>();
-    contrato.etapas.forEach((e) =>
-      e.tarefas.forEach((t) => {
-        names.add(t.recursoResponsavel);
-        t.recursos.forEach((r) => names.add(r.nome));
-      })
-    );
-    return Array.from(names).sort();
-  }, [contrato]);
 
   const hasActiveFilters = recursoFilter !== "Todos" || statusFilter !== "Todos";
 

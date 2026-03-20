@@ -53,36 +53,17 @@ export default function AcompanhamentoDetalhe() {
         </button>
 
         <div className="bg-card rounded-lg border border-border p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                {contrato.empresa}
-                <StatusBadge status={contrato.status} />
-              </h1>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs text-muted-foreground">
-                <span>COT: {contrato.cot}</span>
-                <span>Código MV: {contrato.codigoMV}</span>
-                <span>{contrato.uo}</span>
-                <span>Competência: {contrato.competencia}</span>
-                <span>Etapa atual: <strong className="text-foreground">{contrato.etapaAtual}</strong></span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 text-xs">
-              <div className="flex bg-muted rounded-md p-0.5">
-                {(Object.keys(timeLabels) as TimeView[]).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => setTimeView(key)}
-                    className={`px-3 py-1.5 rounded-md transition-colors font-medium ${
-                      timeView === key
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {timeLabels[key]}
-                  </button>
-                ))}
-              </div>
+          <div>
+            <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              {contrato.empresa}
+              <StatusBadge status={contrato.status} />
+            </h1>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs text-muted-foreground">
+              <span>COT: {contrato.cot}</span>
+              <span>Código MV: {contrato.codigoMV}</span>
+              <span>{contrato.uo}</span>
+              <span>Competência: {contrato.competencia}</span>
+              <span>Etapa atual: <strong className="text-foreground">{contrato.etapaAtual}</strong></span>
             </div>
           </div>
         </div>

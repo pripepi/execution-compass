@@ -26,7 +26,7 @@ export default function AcompanhamentoLista() {
   const [searchEmpresa, setSearchEmpresa] = useState("");
   const [searchCot, setSearchCot] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
-  const [timeView, setTimeView] = useState<TimeView>("month");
+  
 
   const filtered = useMemo(() => {
     return contratosMock.filter((c) => {

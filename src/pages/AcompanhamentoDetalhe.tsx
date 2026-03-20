@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   User,
   Calendar,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { contratosMock, Etapa, Tarefa } from "@/data/mockData";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -19,6 +20,21 @@ export default function AcompanhamentoDetalhe() {
   const contrato = contratosMock.find((c) => c.id === id);
   const [expandedEtapas, setExpandedEtapas] = useState<string[]>([]);
   const [expandedTarefas, setExpandedTarefas] = useState<string[]>([]);
+  const [recursoFilter, setRecursoFilter] = useState("Todos");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+
+  // Collect unique resource names across all tasks
+  const allRecursos = useMemo(() => {
+    if (!contrato) return [];
+    const names = new Set<string>();
+    contrato.etapas.forEach((e) =>
+      e.tarefas.forEach((t) => {
+        names.add(t.recursoResponsavel);
+        t.recursos.forEach((r) => names.add(r.nome));
+      })
+    );
+    return Array.from(names).sort();
+  }, [contrato]);
 
   if (!contrato) {
     return (
@@ -30,6 +46,34 @@ export default function AcompanhamentoDetalhe() {
       </div>
     );
   }
+
+  const hasActiveFilters = recursoFilter !== "Todos" || statusFilter !== "Todos";
+
+  const clearFilters = () => {
+    setRecursoFilter("Todos");
+    setStatusFilter("Todos");
+  };
+
+  // Map user-facing status labels to task status values
+  const statusMap: Record<string, string[]> = {
+    "Concluída": ["Concluída"],
+    "Em andamento": ["Em andamento"],
+    "Não iniciada": ["Pendente", "Não iniciada"],
+  };
+
+  const filterTarefas = (tarefas: Tarefa[]) =>
+    tarefas.filter((t) => {
+      if (recursoFilter !== "Todos") {
+        const matchResponsavel = t.recursoResponsavel === recursoFilter;
+        const matchRecurso = t.recursos.some((r) => r.nome === recursoFilter);
+        if (!matchResponsavel && !matchRecurso) return false;
+      }
+      if (statusFilter !== "Todos") {
+        const allowed = statusMap[statusFilter] || [statusFilter];
+        if (!allowed.includes(t.status)) return false;
+      }
+      return true;
+    });
 
   const toggleEtapa = (etapaId: string) =>
     setExpandedEtapas((prev) =>
@@ -89,20 +133,61 @@ export default function AcompanhamentoDetalhe() {
         ))}
       </div>
 
+      {/* Filters */}
+      <div className="bg-card rounded-lg border border-border p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={recursoFilter}
+            onChange={(e) => setRecursoFilter(e.target.value)}
+            className="px-3 py-2 rounded-md border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="Todos">Todos os recursos</option>
+            {allRecursos.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-md border border-input bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="Todos">Todos os status</option>
+            <option value="Concluída">Concluída</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Não iniciada">Não iniciada</option>
+          </select>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              Limpar filtros
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Etapas */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-foreground">Etapas do contrato</h2>
-        {contrato.etapas.map((etapa, idx) => (
-          <EtapaCard
-            key={etapa.id}
-            etapa={etapa}
-            expanded={expandedEtapas.includes(etapa.id)}
-            onToggle={() => toggleEtapa(etapa.id)}
-            expandedTarefas={expandedTarefas}
-            onToggleTarefa={toggleTarefa}
-            delay={idx * 60}
-          />
-        ))}
+        {contrato.etapas.map((etapa, idx) => {
+          const filteredTarefas = filterTarefas(etapa.tarefas);
+          // Hide etapa entirely if filters are active and no tasks match
+          if (hasActiveFilters && filteredTarefas.length === 0) return null;
+          return (
+            <EtapaCard
+              key={etapa.id}
+              etapa={etapa}
+              filteredTarefas={filteredTarefas}
+              expanded={expandedEtapas.includes(etapa.id)}
+              onToggle={() => toggleEtapa(etapa.id)}
+              expandedTarefas={expandedTarefas}
+              onToggleTarefa={toggleTarefa}
+              delay={idx * 60}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -110,6 +195,7 @@ export default function AcompanhamentoDetalhe() {
 
 function EtapaCard({
   etapa,
+  filteredTarefas,
   expanded,
   onToggle,
   expandedTarefas,
@@ -117,6 +203,7 @@ function EtapaCard({
   delay,
 }: {
   etapa: Etapa;
+  filteredTarefas: Tarefa[];
   expanded: boolean;
   onToggle: () => void;
   expandedTarefas: string[];
@@ -154,7 +241,7 @@ function EtapaCard({
           </div>
           <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
             <span>{etapa.periodo}</span>
-            <span>{etapa.quantidadeTarefas} tarefas</span>
+            <span>{filteredTarefas.length} tarefas</span>
             <span>{etapa.quantidadeRecursos} recursos</span>
           </div>
         </div>
@@ -177,14 +264,18 @@ function EtapaCard({
               Tarefas
             </p>
             <div className="space-y-1.5">
-              {etapa.tarefas.map((tarefa) => (
-                <TarefaRow
-                  key={tarefa.id}
-                  tarefa={tarefa}
-                  expanded={expandedTarefas.includes(tarefa.id)}
-                  onToggle={() => onToggleTarefa(tarefa.id)}
-                />
-              ))}
+              {filteredTarefas.length === 0 ? (
+                <p className="text-xs text-muted-foreground px-1 py-2">Nenhuma tarefa encontrada com os filtros aplicados.</p>
+              ) : (
+                filteredTarefas.map((tarefa) => (
+                  <TarefaRow
+                    key={tarefa.id}
+                    tarefa={tarefa}
+                    expanded={expandedTarefas.includes(tarefa.id)}
+                    onToggle={() => onToggleTarefa(tarefa.id)}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

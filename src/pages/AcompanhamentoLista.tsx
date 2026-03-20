@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Search,
   FileText,
@@ -8,10 +10,19 @@ import {
   AlertTriangle,
   Users,
   ChevronRight,
+  CalendarIcon,
+  X,
 } from "lucide-react";
 import { contratosMock } from "@/data/mockData";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const summaryCards = [
   { label: "CONTRATOS EM EXECUÇÃO", value: 4, icon: FileText, accent: "border-t-card-accent-green" },
@@ -26,16 +37,28 @@ export default function AcompanhamentoLista() {
   const [searchEmpresa, setSearchEmpresa] = useState("");
   const [searchCot, setSearchCot] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
-  
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+
+  const hasActiveFilters = searchEmpresa || searchCot || statusFilter !== "Todos" || dateFrom || dateTo;
+
+  const clearFilters = () => {
+    setSearchEmpresa("");
+    setSearchCot("");
+    setStatusFilter("Todos");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
 
   const filtered = useMemo(() => {
     return contratosMock.filter((c) => {
       if (searchEmpresa && !c.empresa.toLowerCase().includes(searchEmpresa.toLowerCase())) return false;
       if (searchCot && !c.cot.includes(searchCot)) return false;
       if (statusFilter !== "Todos" && c.status !== statusFilter) return false;
+      // Date range filter is a prototype placeholder — mock data doesn't have real dates to parse
       return true;
     });
-  }, [searchEmpresa, searchCot, statusFilter]);
+  }, [searchEmpresa, searchCot, statusFilter, dateFrom, dateTo]);
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in-up">
@@ -104,6 +127,71 @@ export default function AcompanhamentoLista() {
             <option>Concluído</option>
             <option>Suspenso</option>
           </select>
+
+          {/* Date range */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-9 px-3 text-sm font-normal gap-2",
+                  !dateFrom && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                {dateFrom
+                  ? format(dateFrom, "dd/MM/yy", { locale: ptBR })
+                  : "De"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-9 px-3 text-sm font-normal gap-2",
+                  !dateTo && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="w-4 h-4" />
+                {dateTo
+                  ? format(dateTo, "dd/MM/yy", { locale: ptBR })
+                  : "Até"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+            >
+              <X className="w-3.5 h-3.5" />
+              Limpar filtros
+            </Button>
+          )}
         </div>
       </div>
 

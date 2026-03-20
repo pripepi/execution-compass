@@ -19,7 +19,6 @@ export default function AcompanhamentoDetalhe() {
   const contrato = contratosMock.find((c) => c.id === id);
   const [expandedEtapas, setExpandedEtapas] = useState<string[]>([]);
   const [expandedTarefas, setExpandedTarefas] = useState<string[]>([]);
-  const [timeView, setTimeView] = useState<TimeView>("month");
 
   if (!contrato) {
     return (

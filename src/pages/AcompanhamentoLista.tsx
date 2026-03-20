@@ -12,13 +12,6 @@ import {
 import { contratosMock } from "@/data/mockData";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
-type TimeView = "day" | "week" | "month" | "range";
-const timeLabels: Record<TimeView, string> = {
-  day: "Dia",
-  week: "Semana",
-  month: "Mês",
-  range: "Período",
-};
 
 const summaryCards = [
   { label: "CONTRATOS EM EXECUÇÃO", value: 4, icon: FileText, accent: "border-t-card-accent-green" },
@@ -33,7 +26,7 @@ export default function AcompanhamentoLista() {
   const [searchEmpresa, setSearchEmpresa] = useState("");
   const [searchCot, setSearchCot] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
-  const [timeView, setTimeView] = useState<TimeView>("month");
+  
 
   const filtered = useMemo(() => {
     return contratosMock.filter((c) => {
@@ -111,21 +104,6 @@ export default function AcompanhamentoLista() {
             <option>Concluído</option>
             <option>Suspenso</option>
           </select>
-          <div className="flex bg-muted rounded-md p-0.5 ml-auto">
-            {(Object.keys(timeLabels) as TimeView[]).map((key) => (
-              <button
-                key={key}
-                onClick={() => setTimeView(key)}
-                className={`px-3 py-1.5 rounded-md transition-colors text-xs font-medium ${
-                  timeView === key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {timeLabels[key]}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 

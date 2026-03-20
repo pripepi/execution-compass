@@ -111,9 +111,20 @@ export default function AcompanhamentoLista() {
             <option>Concluído</option>
             <option>Suspenso</option>
           </select>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-            <Filter className="w-3.5 h-3.5" />
-            Competência: Mar/2026
+          <div className="flex bg-muted rounded-md p-0.5 ml-auto">
+            {(Object.keys(timeLabels) as TimeView[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => setTimeView(key)}
+                className={`px-3 py-1.5 rounded-md transition-colors text-xs font-medium ${
+                  timeView === key
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {timeLabels[key]}
+              </button>
+            ))}
           </div>
         </div>
       </div>

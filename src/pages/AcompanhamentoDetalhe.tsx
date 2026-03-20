@@ -13,15 +13,6 @@ import {
 import { contratosMock, Etapa, Tarefa } from "@/data/mockData";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
-type TimeView = "day" | "week" | "month" | "range";
-
-const timeLabels: Record<TimeView, string> = {
-  day: "Dia",
-  week: "Semana",
-  month: "Mês",
-  range: "Período",
-};
-
 export default function AcompanhamentoDetalhe() {
   const { id } = useParams();
   const navigate = useNavigate();

@@ -52,9 +52,6 @@ export default function AcompanhamentoLista() {
         <p className="text-sm text-muted-foreground mt-1">
           Acompanhe a execução dos contratos, suas etapas, tarefas e recursos
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Competência atual: <span className="font-medium text-foreground">Março/2026</span>
-        </p>
       </div>
 
       {/* Summary Cards */}

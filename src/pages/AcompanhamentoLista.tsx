@@ -8,10 +8,17 @@ import {
   AlertTriangle,
   Users,
   ChevronRight,
-  Filter,
 } from "lucide-react";
 import { contratosMock } from "@/data/mockData";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+
+type TimeView = "day" | "week" | "month" | "range";
+const timeLabels: Record<TimeView, string> = {
+  day: "Dia",
+  week: "Semana",
+  month: "Mês",
+  range: "Período",
+};
 
 const summaryCards = [
   { label: "CONTRATOS EM EXECUÇÃO", value: 4, icon: FileText, accent: "border-t-card-accent-green" },

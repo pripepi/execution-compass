@@ -88,6 +88,26 @@ export const servicosList: string[] = [
   "Medicina do Trabalho",
 ];
 
+// CRs e UOs mock
+export const crList = [
+  { id: "cr1", nome: "CR 100" },
+  { id: "cr2", nome: "CR 200" },
+  { id: "cr3", nome: "CR 300" },
+];
+
+export const uoList = [
+  { id: "uo1", nome: "Porto Alegre", crId: "cr1" },
+  { id: "uo2", nome: "Caxias do Sul", crId: "cr2" },
+  { id: "uo3", nome: "Canoas", crId: "cr3" },
+  { id: "uo4", nome: "Pelotas", crId: "cr1" },
+];
+
+export const centroCustosList = [
+  { id: "cc1", nome: "CC 1001" },
+  { id: "cc2", nome: "CC 1002" },
+  { id: "cc3", nome: "CC 2001" },
+];
+
 export const servicosParametrosMock: ServicoParametro[] = [
   {
     id: "sp1",

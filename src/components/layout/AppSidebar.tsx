@@ -115,7 +115,7 @@ export function AppSidebar() {
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm hover:bg-sidebar-muted transition-colors mb-1"
         >
           <Home className="w-4 h-4" />
-          Início
+          Home
         </button>
 
         {menuSections.map((section) => (

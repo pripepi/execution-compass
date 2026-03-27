@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout/AppLayout";
 import AcompanhamentoLista from "./pages/AcompanhamentoLista";
 import AcompanhamentoDetalhe from "./pages/AcompanhamentoDetalhe";
+import ParametrizacaoServicos from "./pages/ParametrizacaoServicos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<AcompanhamentoLista />} />
             <Route path="/acompanhamento/:id" element={<AcompanhamentoDetalhe />} />
+            <Route path="/servicos" element={<ParametrizacaoServicos />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

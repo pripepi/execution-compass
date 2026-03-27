@@ -129,22 +129,35 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
           </Select>
         </div>
 
-        {/* Limite de mobilidade */}
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Limite de mobilidade (km) <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            type="number"
-            min={0}
-            placeholder="Ex: 50"
-            value={limiteMobilidade}
-            onChange={(e) => setLimiteMobilidade(e.target.value)}
-          />
+        {/* Linha 1: Limite de mobilidade + UO */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Limite de mobilidade (km) <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Ex: 50"
+              value={limiteMobilidade}
+              onChange={(e) => setLimiteMobilidade(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              UO <span className="text-destructive">*</span>
+            </Label>
+            <UoMultiselect
+              uos={uosFiltradas}
+              selected={uosSelecionadas}
+              onChange={setUosSelecionadas}
+            />
+          </div>
         </div>
 
-        {/* CR, UO, Centro de Custos */}
-        <div className="grid grid-cols-3 gap-4">
+        {/* Linha 2: CR + Centro de Custos */}
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               CR <span className="text-destructive">*</span>
@@ -159,17 +172,6 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              UO <span className="text-destructive">*</span>
-            </Label>
-            <UoMultiselect
-              uos={uosFiltradas}
-              selected={uosSelecionadas}
-              onChange={setUosSelecionadas}
-            />
           </div>
 
           <div className="space-y-2">

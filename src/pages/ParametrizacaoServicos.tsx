@@ -188,7 +188,7 @@ export default function ParametrizacaoServicos() {
                 <td className="px-4 py-3 text-sm text-center text-foreground">{s.etapas}</td>
                 <td className="px-4 py-3 text-sm text-center text-muted-foreground">{s.versao}</td>
                 <td className="px-4 py-3 text-center">
-                  <StatusBadge status={statusColor(s.status)} label={s.status} />
+                  <StatusBadge status={s.status} />
                 </td>
                 <td className="px-4 py-3">
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />

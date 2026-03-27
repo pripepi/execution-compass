@@ -27,6 +27,9 @@ import { Separator } from "@/components/ui/separator";
 import {
   etapasCadastro,
   servicosList,
+  crList,
+  uoList,
+  centroCustosList,
   type EtapaCadastro,
 } from "@/data/servicosMockData";
 
@@ -61,10 +64,23 @@ interface Props {
 
 export function NovoParametroModal({ open, onOpenChange }: Props) {
   const [servico, setServico] = useState("");
+  const [limiteMobilidade, setLimiteMobilidade] = useState("");
+  const [cr, setCr] = useState("");
+  const [uosSelecionadas, setUosSelecionadas] = useState<string[]>([]);
+  const [centroCustos, setCentroCustos] = useState("");
   const [etapas, setEtapas] = useState<EtapaBlock[]>([createEmptyEtapa()]);
+
+  const uosFiltradas = useMemo(() => {
+    if (!cr) return uoList;
+    return uoList.filter((u) => u.crId === cr);
+  }, [cr]);
 
   const resetForm = () => {
     setServico("");
+    setLimiteMobilidade("");
+    setCr("");
+    setUosSelecionadas([]);
+    setCentroCustos("");
     setEtapas([createEmptyEtapa()]);
   };
 
@@ -111,6 +127,66 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Limite de mobilidade */}
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Limite de mobilidade (km) <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="number"
+            min={0}
+            placeholder="Ex: 50"
+            value={limiteMobilidade}
+            onChange={(e) => setLimiteMobilidade(e.target.value)}
+          />
+        </div>
+
+        {/* CR, UO, Centro de Custos */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              CR <span className="text-destructive">*</span>
+            </Label>
+            <Select value={cr} onValueChange={(v) => { setCr(v); setUosSelecionadas([]); }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {crList.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              UO <span className="text-destructive">*</span>
+            </Label>
+            <UoMultiselect
+              uos={uosFiltradas}
+              selected={uosSelecionadas}
+              onChange={setUosSelecionadas}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Centro de Custos
+            </Label>
+            <Select value={centroCustos} onValueChange={setCentroCustos}>
+              <SelectTrigger>
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                {centroCustosList.map((cc) => (
+                  <SelectItem key={cc.id} value={cc.id}>{cc.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <Separator />

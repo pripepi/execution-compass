@@ -27,6 +27,9 @@ import { Separator } from "@/components/ui/separator";
 import {
   etapasCadastro,
   servicosList,
+  crList,
+  uoList,
+  centroCustosList,
   type EtapaCadastro,
 } from "@/data/servicosMockData";
 
@@ -61,10 +64,23 @@ interface Props {
 
 export function NovoParametroModal({ open, onOpenChange }: Props) {
   const [servico, setServico] = useState("");
+  const [limiteMobilidade, setLimiteMobilidade] = useState("");
+  const [cr, setCr] = useState("");
+  const [uosSelecionadas, setUosSelecionadas] = useState<string[]>([]);
+  const [centroCustos, setCentroCustos] = useState("");
   const [etapas, setEtapas] = useState<EtapaBlock[]>([createEmptyEtapa()]);
+
+  const uosFiltradas = useMemo(() => {
+    if (!cr) return uoList;
+    return uoList.filter((u) => u.crId === cr);
+  }, [cr]);
 
   const resetForm = () => {
     setServico("");
+    setLimiteMobilidade("");
+    setCr("");
+    setUosSelecionadas([]);
+    setCentroCustos("");
     setEtapas([createEmptyEtapa()]);
   };
 
@@ -111,6 +127,66 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Limite de mobilidade */}
+        <div className="space-y-2">
+          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Limite de mobilidade (km) <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            type="number"
+            min={0}
+            placeholder="Ex: 50"
+            value={limiteMobilidade}
+            onChange={(e) => setLimiteMobilidade(e.target.value)}
+          />
+        </div>
+
+        {/* CR, UO, Centro de Custos */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              CR <span className="text-destructive">*</span>
+            </Label>
+            <Select value={cr} onValueChange={(v) => { setCr(v); setUosSelecionadas([]); }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {crList.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              UO <span className="text-destructive">*</span>
+            </Label>
+            <UoMultiselect
+              uos={uosFiltradas}
+              selected={uosSelecionadas}
+              onChange={setUosSelecionadas}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Centro de Custos
+            </Label>
+            <Select value={centroCustos} onValueChange={setCentroCustos}>
+              <SelectTrigger>
+                <SelectValue placeholder="—" />
+              </SelectTrigger>
+              <SelectContent>
+                {centroCustosList.map((cc) => (
+                  <SelectItem key={cc.id} value={cc.id}>{cc.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <Separator />
@@ -548,5 +624,102 @@ function AtividadesMultiselect({
         </PopoverContent>
       </Popover>
     </div>
+  );
+}
+
+/* ─── UO Multiselect ─── */
+
+function UoMultiselect({
+  uos,
+  selected,
+  onChange,
+}: {
+  uos: { id: string; nome: string }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return uos;
+    const q = search.toLowerCase();
+    return uos.filter((u) => u.nome.toLowerCase().includes(q));
+  }, [search, uos]);
+
+  const toggle = (id: string) => {
+    onChange(
+      selected.includes(id)
+        ? selected.filter((s) => s !== id)
+        : [...selected, id]
+    );
+  };
+
+  const selectedNames = uos.filter((u) => selected.includes(u.id));
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          className="w-full justify-between font-normal h-auto min-h-10"
+        >
+          <span className="flex flex-wrap gap-1 flex-1 text-left truncate">
+            {selectedNames.length > 0 ? (
+              selectedNames.map((u) => (
+                <Badge key={u.id} variant="secondary" className="text-xs font-normal">
+                  {u.nome}
+                  <button
+                    type="button"
+                    className="ml-1 hover:text-destructive"
+                    onClick={(ev) => { ev.stopPropagation(); toggle(u.id); }}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </Badge>
+              ))
+            ) : (
+              <span className="text-muted-foreground">Selecione uma ou mais UOs</span>
+            )}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <div className="p-2">
+          <Input
+            placeholder="Buscar UO..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8"
+          />
+        </div>
+        <div className="max-h-48 overflow-y-auto">
+          {filtered.map((u) => {
+            const isSelected = selected.includes(u.id);
+            return (
+              <button
+                key={u.id}
+                onClick={() => toggle(u.id)}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center gap-2"
+              >
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                    isSelected ? "bg-primary border-primary" : "border-input"
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                </div>
+                {u.nome}
+              </button>
+            );
+          })}
+          {filtered.length === 0 && (
+            <p className="px-3 py-2 text-sm text-muted-foreground">Nenhuma UO encontrada.</p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

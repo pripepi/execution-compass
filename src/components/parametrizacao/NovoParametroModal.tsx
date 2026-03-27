@@ -317,9 +317,10 @@ function EtapaBlockComponent({
         </span>
         {canRemove && (
           <Button
+            type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
             onClick={onRemove}
           >
             <Trash2 className="w-4 h-4" />
@@ -327,7 +328,6 @@ function EtapaBlockComponent({
         )}
       </div>
 
-      {/* Etapa select with search */}
       <div className="space-y-2">
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Etapa <span className="text-destructive">*</span>
@@ -339,9 +339,7 @@ function EtapaBlockComponent({
               role="combobox"
               className="w-full justify-between font-normal"
             >
-              {selectedEtapaCadastro
-                ? selectedEtapaCadastro.nome
-                : "Selecione uma etapa"}
+              {selectedEtapaCadastro ? selectedEtapaCadastro.nome : "Selecione uma etapa"}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -354,49 +352,45 @@ function EtapaBlockComponent({
                 className="h-8"
               />
             </div>
-            <div className="max-h-48 overflow-y-auto">
-              {filteredEtapas.map((ec) => (
-                <button
-                  key={ec.id}
-                  onClick={() => handleSelectEtapa(ec)}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center gap-2 ${
-                    etapa.etapaId === ec.id ? "bg-accent/60 font-medium" : ""
-                  }`}
-                >
-                  {etapa.etapaId === ec.id && (
-                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-                  )}
-                  <span className={etapa.etapaId === ec.id ? "" : "ml-5.5"}>
-                    {ec.nome}
-                  </span>
-                </button>
-              ))}
+            <div className="max-h-60 overflow-y-auto">
+              {filteredEtapas.map((ec) => {
+                const isSelected = etapa.etapaId === ec.id;
+                const blocked = isEtapaBlocked(ec.id);
+                return (
+                  <button
+                    key={ec.id}
+                    disabled={blocked}
+                    onClick={() => handleSelectEtapa(ec)}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center justify-between ${
+                      blocked ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? "bg-primary border-primary" : "border-input"}`}>
+                        {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                      </div>
+                      {ec.nome}
+                    </div>
+                    {blocked && <span className="text-[10px] uppercase font-bold text-muted-foreground">Conflito</span>}
+                  </button>
+                );
+              })}
               {filteredEtapas.length === 0 && (
-                <p className="px-3 py-2 text-sm text-muted-foreground">
-                  Nenhuma etapa encontrada.
-                </p>
+                <p className="px-3 py-2 text-sm text-muted-foreground">Nenhuma etapa encontrada.</p>
               )}
             </div>
           </PopoverContent>
         </Popover>
       </div>
 
-      {/* Tipo da etapa */}
       <div className="space-y-2">
         <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Tipo <span className="text-destructive">*</span>
         </Label>
         <Select
-          value={etapa.tipo}
-          onValueChange={(v) =>
-            onUpdate({
-              tipo: v as TipoEtapa,
-              tempoNovo: "",
-              tempoRenovacao: "",
-              tempoUnico: "",
-            })
-          }
           disabled={!etapa.etapaId}
+          value={etapa.tipo}
+          onValueChange={(v) => onUpdate({ tipo: v as TipoEtapa })}
         >
           <SelectTrigger>
             <SelectValue placeholder={!etapa.etapaId ? "Selecione a etapa primeiro" : "Selecione o tipo"} />

@@ -123,6 +123,7 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
               etapa={etapa}
               index={index}
               canRemove={etapas.length > 1}
+              allEtapas={etapas}
               onUpdate={(updates) => updateEtapa(etapa.id, updates)}
               onRemove={() => removeEtapa(etapa.id)}
             />
@@ -160,22 +161,58 @@ function EtapaBlockComponent({
   etapa,
   index,
   canRemove,
+  allEtapas,
   onUpdate,
   onRemove,
 }: {
   etapa: EtapaBlock;
   index: number;
   canRemove: boolean;
+  allEtapas: EtapaBlock[];
   onUpdate: (updates: Partial<EtapaBlock>) => void;
   onRemove: () => void;
 }) {
   const [etapaSearch, setEtapaSearch] = useState("");
   const [etapaPopoverOpen, setEtapaPopoverOpen] = useState(false);
 
+  // Exclusivity: check how the same etapaId is used in other blocks
+  const otherBlocksForSameEtapa = useMemo(
+    () => allEtapas.filter((e) => e.id !== etapa.id && e.etapaId === etapa.etapaId && e.etapaId !== ""),
+    [allEtapas, etapa.id, etapa.etapaId]
+  );
+
+  const hasIndiferenteElsewhere = otherBlocksForSameEtapa.some((e) => e.tipo === "indiferente");
+  const hasNovoOrRenovacaoElsewhere = otherBlocksForSameEtapa.some((e) => e.tipo === "novo" || e.tipo === "renovacao");
+
+  // Build disabled tipo map with reasons
+  const tipoDisabledMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    if (hasIndiferenteElsewhere) {
+      map["novo"] = "Etapa já cadastrada como Indiferente neste parâmetro";
+      map["renovacao"] = "Etapa já cadastrada como Indiferente neste parâmetro";
+    }
+    if (hasNovoOrRenovacaoElsewhere) {
+      map["indiferente"] = "Etapa já cadastrada como Novo/Renovação neste parâmetro";
+    }
+    return map;
+  }, [hasIndiferenteElsewhere, hasNovoOrRenovacaoElsewhere]);
+
+  // Check if selecting a given etapaId would be blocked (already used as indiferente AND novo/renovacao)
+  const isEtapaBlocked = useCallback((etapaId: string) => {
+    const others = allEtapas.filter((e) => e.id !== etapa.id && e.etapaId === etapaId && e.etapaId !== "");
+    const hasInd = others.some((e) => e.tipo === "indiferente");
+    const hasNR = others.some((e) => e.tipo === "novo" || e.tipo === "renovacao");
+    // Blocked if both groups exist (shouldn't happen but defensive)
+    return hasInd && hasNR;
+  }, [allEtapas, etapa.id]);
+
   const filteredEtapas = useMemo(() => {
-    if (!etapaSearch.trim()) return etapasCadastro;
-    const q = etapaSearch.toLowerCase();
-    return etapasCadastro.filter((e) => e.nome.toLowerCase().includes(q));
+    let list = etapasCadastro;
+    if (etapaSearch.trim()) {
+      const q = etapaSearch.toLowerCase();
+      list = list.filter((e) => e.nome.toLowerCase().includes(q));
+    }
+    return list;
   }, [etapaSearch]);
 
   const selectedEtapaCadastro = etapasCadastro.find(
@@ -183,7 +220,7 @@ function EtapaBlockComponent({
   );
 
   const handleSelectEtapa = (ec: EtapaCadastro) => {
-    onUpdate({ etapaId: ec.id, atividadesSelecionadas: [] });
+    onUpdate({ etapaId: ec.id, tipo: "", atividadesSelecionadas: [], tempoNovo: "", tempoRenovacao: "", tempoUnico: "" });
     setEtapaPopoverOpen(false);
     setEtapaSearch("");
   };
@@ -281,18 +318,34 @@ function EtapaBlockComponent({
               tempoUnico: "",
             })
           }
+          disabled={!etapa.etapaId}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecione o tipo" />
+            <SelectValue placeholder={!etapa.etapaId ? "Selecione a etapa primeiro" : "Selecione o tipo"} />
           </SelectTrigger>
           <SelectContent>
-            {tipoOptions.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
-              </SelectItem>
-            ))}
+            {tipoOptions.map((t) => {
+              const disabledReason = tipoDisabledMap[t.value];
+              return (
+                <SelectItem
+                  key={t.value}
+                  value={t.value}
+                  disabled={!!disabledReason}
+                >
+                  {t.label}
+                  {disabledReason && (
+                    <span className="ml-2 text-xs text-muted-foreground">({disabledReason})</span>
+                  )}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
+        {etapa.etapaId && Object.keys(tipoDisabledMap).length > 0 && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Alguns tipos estão indisponíveis por conflito com outra etapa neste parâmetro.
+          </p>
+        )}
       </div>
 
       {/* Dynamic time fields */}

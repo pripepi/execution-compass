@@ -44,19 +44,6 @@ export default function ParametrizacaoServicos() {
     return list;
   }, [tabFilter, search]);
 
-  const statusColor = (status: ServicoParametro["status"]) => {
-    switch (status) {
-      case "Ativo":
-        return "active";
-      case "Rascunho":
-        return "warning";
-      case "Inativo":
-        return "neutral";
-      default:
-        return "neutral";
-    }
-  };
-
   const summaryCards = [
     { label: "TOTAL DE SERVIÇOS", value: totals.total, accent: "hsl(var(--status-info))" },
     { label: "ATIVOS", value: totals.ativos, accent: "hsl(var(--status-active))" },

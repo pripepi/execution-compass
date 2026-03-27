@@ -3,7 +3,7 @@ import { Plus, Search, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { servicosParametrosMock, type ServicoParametro } from "@/data/servicosMockData";
+import { servicosParametrosMock } from "@/data/servicosMockData";
 import { NovoParametroModal } from "@/components/parametrizacao/NovoParametroModal";
 
 type TabFilter = "todos" | "ativo" | "rascunho" | "inativo";

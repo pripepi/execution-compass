@@ -9,6 +9,7 @@ const statusMap: Record<string, StatusType> = {
   "Concluída": "info",
   "Concluído": "info",
   "Pendente": "warning",
+  "Rascunho": "warning",
   "Atrasada": "danger",
   "Suspenso": "danger",
   "Não iniciada": "neutral",

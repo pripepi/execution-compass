@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   etapasCadastro,
   servicosList,
@@ -69,6 +70,7 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
   const [uosSelecionadas, setUosSelecionadas] = useState<string[]>([]);
   const [centroCustos, setCentroCustos] = useState("");
   const [etapas, setEtapas] = useState<EtapaBlock[]>([createEmptyEtapa()]);
+  const [activeTab, setActiveTab] = useState("servico");
 
   const uosFiltradas = useMemo(() => {
     if (!cr) return uoList;
@@ -82,6 +84,7 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
     setUosSelecionadas([]);
     setCentroCustos("");
     setEtapas([createEmptyEtapa()]);
+    setActiveTab("servico");
   };
 
   const handleClose = () => {
@@ -96,130 +99,177 @@ export function NovoParametroModal({ open, onOpenChange }: Props) {
   };
 
   const removeEtapa = (id: string) => {
-    setEtapas((prev) => prev.filter((e) => e.id !== id));
+    setEtapas((prev) => {
+      const newEtapas = prev.filter((e) => e.id !== id);
+      if (activeTab === id) {
+        setActiveTab("servico");
+      }
+      return newEtapas;
+    });
   };
 
   const addEtapa = () => {
-    setEtapas((prev) => [...prev, createEmptyEtapa()]);
+    const newEtapa = createEmptyEtapa();
+    setEtapas((prev) => [...prev, newEtapa]);
+    setActiveTab(newEtapa.id);
   };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else onOpenChange(v); }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-xl">Novo Parâmetro</DialogTitle>
         </DialogHeader>
 
-        {/* Serviço */}
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Serviço <span className="text-destructive">*</span>
-          </Label>
-          <Select value={servico} onValueChange={setServico}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um serviço" />
-            </SelectTrigger>
-            <SelectContent>
-              {servicosList.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <div className="px-6 pt-4">
+            <TabsList className="w-full justify-start h-10 bg-transparent border-b rounded-none p-0 gap-6">
+              <TabsTrigger 
+                value="servico" 
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 h-10 text-sm font-medium"
+              >
+                Serviço
+              </TabsTrigger>
+              {etapas.map((etapa, index) => (
+                <TabsTrigger 
+                  key={etapa.id} 
+                  value={etapa.id}
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 h-10 text-sm font-medium"
+                >
+                  Etapa {index + 1}
+                </TabsTrigger>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Linha 1: Limite de mobilidade + UO */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Limite de mobilidade (km) <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Ex: 50"
-              value={limiteMobilidade}
-              onChange={(e) => setLimiteMobilidade(e.target.value)}
-            />
+            </TabsList>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              UO <span className="text-destructive">*</span>
-            </Label>
-            <UoMultiselect
-              uos={uosFiltradas}
-              selected={uosSelecionadas}
-              onChange={setUosSelecionadas}
-            />
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <TabsContent value="servico" className="mt-0 space-y-6">
+              {/* Serviço */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Serviço <span className="text-destructive">*</span>
+                </Label>
+                <Select value={servico} onValueChange={setServico}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um serviço" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {servicosList.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Linha 2: Limite de mobilidade + UO */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Limite de mobilidade (km) <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    placeholder="Ex: 50"
+                    value={limiteMobilidade}
+                    onChange={(e) => setLimiteMobilidade(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    UO <span className="text-destructive">*</span>
+                  </Label>
+                  <UoMultiselect
+                    uos={uosFiltradas}
+                    selected={uosSelecionadas}
+                    onChange={setUosSelecionadas}
+                  />
+                </div>
+              </div>
+
+              {/* Linha 3: CR + Centro de Custos */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    CR <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={cr} onValueChange={(v) => { setCr(v); setUosSelecionadas([]); }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {crList.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Centro de Custos
+                  </Label>
+                  <Select value={centroCustos} onValueChange={setCentroCustos}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {centroCustosList.map((cc) => (
+                        <SelectItem key={cc.id} value={cc.id}>{cc.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addEtapa}
+                  className="gap-2 w-full border-dashed"
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar etapa
+                </Button>
+              </div>
+            </TabsContent>
+
+            {etapas.map((etapa, index) => (
+              <TabsContent key={etapa.id} value={etapa.id} className="mt-0">
+                <div className="space-y-6">
+                  <EtapaBlockComponent
+                    etapa={etapa}
+                    index={index}
+                    canRemove={etapas.length > 1}
+                    allEtapas={etapas}
+                    onUpdate={(updates) => updateEtapa(etapa.id, updates)}
+                    onRemove={() => removeEtapa(etapa.id)}
+                  />
+                  
+                  <div className="pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addEtapa}
+                      className="gap-2 w-full border-dashed"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar etapa
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            ))}
           </div>
-        </div>
+        </Tabs>
 
-        {/* Linha 2: CR + Centro de Custos */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              CR <span className="text-destructive">*</span>
-            </Label>
-            <Select value={cr} onValueChange={(v) => { setCr(v); setUosSelecionadas([]); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {crList.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Centro de Custos
-            </Label>
-            <Select value={centroCustos} onValueChange={setCentroCustos}>
-              <SelectTrigger>
-                <SelectValue placeholder="—" />
-              </SelectTrigger>
-              <SelectContent>
-                {centroCustosList.map((cc) => (
-                  <SelectItem key={cc.id} value={cc.id}>{cc.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Etapas */}
-        <div className="space-y-4">
-          {etapas.map((etapa, index) => (
-            <EtapaBlockComponent
-              key={etapa.id}
-              etapa={etapa}
-              index={index}
-              canRemove={etapas.length > 1}
-              allEtapas={etapas}
-              onUpdate={(updates) => updateEtapa(etapa.id, updates)}
-              onRemove={() => removeEtapa(etapa.id)}
-            />
-          ))}
-
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={addEtapa}
-            className="gap-2 w-full border-dashed"
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar etapa
-          </Button>
-        </div>
-
-        <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
+        <DialogFooter className="p-6 border-t flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={handleClose}>
             Cancelar
           </Button>
@@ -253,7 +303,6 @@ function EtapaBlockComponent({
   const [etapaSearch, setEtapaSearch] = useState("");
   const [etapaPopoverOpen, setEtapaPopoverOpen] = useState(false);
 
-  // Exclusivity: check how the same etapaId is used in other blocks
   const otherBlocksForSameEtapa = useMemo(
     () => allEtapas.filter((e) => e.id !== etapa.id && e.etapaId === etapa.etapaId && e.etapaId !== ""),
     [allEtapas, etapa.id, etapa.etapaId]
@@ -262,7 +311,6 @@ function EtapaBlockComponent({
   const hasIndiferenteElsewhere = otherBlocksForSameEtapa.some((e) => e.tipo === "indiferente");
   const hasNovoOrRenovacaoElsewhere = otherBlocksForSameEtapa.some((e) => e.tipo === "novo" || e.tipo === "renovacao");
 
-  // Build disabled tipo map with reasons
   const tipoDisabledMap = useMemo(() => {
     const map: Record<string, string> = {};
     if (hasIndiferenteElsewhere) {
@@ -274,15 +322,6 @@ function EtapaBlockComponent({
     }
     return map;
   }, [hasIndiferenteElsewhere, hasNovoOrRenovacaoElsewhere]);
-
-  // Check if selecting a given etapaId would be blocked (already used as indiferente AND novo/renovacao)
-  const isEtapaBlocked = useCallback((etapaId: string) => {
-    const others = allEtapas.filter((e) => e.id !== etapa.id && e.etapaId === etapaId && e.etapaId !== "");
-    const hasInd = others.some((e) => e.tipo === "indiferente");
-    const hasNR = others.some((e) => e.tipo === "novo" || e.tipo === "renovacao");
-    // Blocked if both groups exist (shouldn't happen but defensive)
-    return hasInd && hasNR;
-  }, [allEtapas, etapa.id]);
 
   const filteredEtapas = useMemo(() => {
     let list = etapasCadastro;
@@ -310,20 +349,19 @@ function EtapaBlockComponent({
   ];
 
   return (
-    <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-foreground">
-          Etapa {index + 1}
-        </span>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Configurações da Etapa {index + 1}</h3>
         {canRemove && (
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            size="sm"
             onClick={onRemove}
+            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
+            Remover
           </Button>
         )}
       </div>
@@ -353,28 +391,16 @@ function EtapaBlockComponent({
               />
             </div>
             <div className="max-h-60 overflow-y-auto">
-              {filteredEtapas.map((ec) => {
-                const isSelected = etapa.etapaId === ec.id;
-                const blocked = isEtapaBlocked(ec.id);
-                return (
-                  <button
-                    key={ec.id}
-                    disabled={blocked}
-                    onClick={() => handleSelectEtapa(ec)}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center justify-between ${
-                      blocked ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isSelected ? "bg-primary border-primary" : "border-input"}`}>
-                        {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
-                      </div>
-                      {ec.nome}
-                    </div>
-                    {blocked && <span className="text-[10px] uppercase font-bold text-muted-foreground">Conflito</span>}
-                  </button>
-                );
-              })}
+              {filteredEtapas.map((ec) => (
+                <button
+                  key={ec.id}
+                  onClick={() => handleSelectEtapa(ec)}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors flex items-center justify-between"
+                >
+                  {ec.nome}
+                  {etapa.etapaId === ec.id && <Check className="w-4 h-4 text-primary" />}
+                </button>
+              ))}
               {filteredEtapas.length === 0 && (
                 <p className="px-3 py-2 text-sm text-muted-foreground">Nenhuma etapa encontrada.</p>
               )}
@@ -383,118 +409,78 @@ function EtapaBlockComponent({
         </Popover>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Tipo <span className="text-destructive">*</span>
-        </Label>
-        <Select
-          disabled={!etapa.etapaId}
-          value={etapa.tipo}
-          onValueChange={(v) => onUpdate({ tipo: v as TipoEtapa })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={!etapa.etapaId ? "Selecione a etapa primeiro" : "Selecione o tipo"} />
-          </SelectTrigger>
-          <SelectContent>
-            {tipoOptions.map((t) => {
-              const disabledReason = tipoDisabledMap[t.value];
-              return (
-                <SelectItem
-                  key={t.value}
-                  value={t.value}
-                  disabled={!!disabledReason}
-                >
-                  {t.label}
-                  {disabledReason && (
-                    <span className="ml-2 text-xs text-muted-foreground">({disabledReason})</span>
-                  )}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
-        {etapa.etapaId && Object.keys(tipoDisabledMap).length > 0 && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Alguns tipos estão indisponíveis por conflito com outra etapa neste parâmetro.
-          </p>
-        )}
-      </div>
+      {etapa.etapaId && (
+        <>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Tipo <span className="text-destructive">*</span>
+            </Label>
+            <Select value={etapa.tipo} onValueChange={(v) => onUpdate({ tipo: v as TipoEtapa })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo primeiro" />
+              </SelectTrigger>
+              <SelectContent>
+                {tipoOptions.map((opt) => {
+                  const disabledReason = tipoDisabledMap[opt.value];
+                  return (
+                    <SelectItem 
+                      key={opt.value} 
+                      value={opt.value}
+                      disabled={!!disabledReason}
+                    >
+                      {opt.label} {disabledReason && `(${disabledReason})`}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Dynamic time fields */}
-      {etapa.tipo === "novo" && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tempo Novo (h)
-            </Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={etapa.tempoNovo}
-              onChange={(e) => onUpdate({ tempoNovo: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tempo Renovação (h)
-            </Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={etapa.tempoRenovacao}
-              onChange={(e) => onUpdate({ tempoRenovacao: e.target.value })}
-            />
-          </div>
-        </div>
+          {etapa.tipo && (
+            <div className="grid grid-cols-2 gap-4">
+              {etapa.tipo === "indiferente" ? (
+                <div className="space-y-2 col-span-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Tempo Único (min) <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={etapa.tempoUnico}
+                    onChange={(e) => onUpdate({ tempoUnico: e.target.value })}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Tempo Novo (min) <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={etapa.tempoNovo}
+                      onChange={(e) => onUpdate({ tempoNovo: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Tempo Renovação (min) <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={etapa.tempoRenovacao}
+                      onChange={(e) => onUpdate({ tempoRenovacao: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </>
       )}
 
-      {etapa.tipo === "renovacao" && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tempo Renovação (h)
-            </Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={etapa.tempoRenovacao}
-              onChange={(e) => onUpdate({ tempoRenovacao: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tempo Novo (h)
-            </Label>
-            <Input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={etapa.tempoNovo}
-              onChange={(e) => onUpdate({ tempoNovo: e.target.value })}
-            />
-          </div>
-        </div>
-      )}
-
-      {etapa.tipo === "indiferente" && (
-        <div className="space-y-2">
-          <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Tempo (h)
-          </Label>
-          <Input
-            type="number"
-            min={0}
-            placeholder="0"
-            value={etapa.tempoUnico}
-            onChange={(e) => onUpdate({ tempoUnico: e.target.value })}
-          />
-        </div>
-      )}
-
-      {/* Atividades multiselect */}
       {selectedEtapaCadastro && (
         <AtividadesMultiselect
           atividades={selectedEtapaCadastro.atividades}

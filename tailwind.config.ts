@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -15,7 +14,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"SF Mono"', 'monospace'],
+      },
+      fontSize: {
+        'xxs': ['0.65rem', { lineHeight: '1rem' }],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,33 +54,33 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          foreground: "hsl(var(--surface-foreground))",
+        },
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar-bg))",
-          foreground: "hsl(var(--sidebar-fg))",
-          muted: "hsl(var(--sidebar-muted))",
-          active: "hsl(var(--sidebar-active))",
-          "active-foreground": "hsl(var(--sidebar-active-fg))",
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
         status: {
-          active: "hsl(var(--status-active))",
-          "active-bg": "hsl(var(--status-active-bg))",
+          success: "hsl(var(--status-success))",
+          "success-foreground": "hsl(var(--status-success-foreground))",
+          "success-muted": "hsl(var(--status-success-muted))",
           warning: "hsl(var(--status-warning))",
-          "warning-bg": "hsl(var(--status-warning-bg))",
+          "warning-foreground": "hsl(var(--status-warning-foreground))",
+          "warning-muted": "hsl(var(--status-warning-muted))",
           danger: "hsl(var(--status-danger))",
-          "danger-bg": "hsl(var(--status-danger-bg))",
+          "danger-foreground": "hsl(var(--status-danger-foreground))",
+          "danger-muted": "hsl(var(--status-danger-muted))",
           info: "hsl(var(--status-info))",
-          "info-bg": "hsl(var(--status-info-bg))",
-          neutral: "hsl(var(--status-neutral))",
-          "neutral-bg": "hsl(var(--status-neutral-bg))",
-          implantation: "hsl(var(--status-implantation))",
-          "implantation-bg": "hsl(var(--status-implantation-bg))",
-        },
-        "card-accent": {
-          green: "hsl(var(--card-accent-green))",
-          orange: "hsl(var(--card-accent-orange))",
-          blue: "hsl(var(--card-accent-blue))",
-          yellow: "hsl(var(--card-accent-yellow))",
-          red: "hsl(var(--card-accent-red))",
+          "info-foreground": "hsl(var(--status-info-foreground))",
+          "info-muted": "hsl(var(--status-info-muted))",
         },
       },
       borderRadius: {
@@ -94,17 +97,17 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "fade-in-up": {
-          from: { opacity: "0", transform: "translateY(12px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+        "slide-in-right": {
+          from: { transform: "translateX(100%)", opacity: "0" },
+          to: { transform: "translateX(0)", opacity: "1" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in-up": "fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-in-right": "slide-in-right 0.2s ease-out",
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;

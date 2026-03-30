@@ -41,7 +41,7 @@ const App = () => (
         <ExecucoesProvider>
         <AlocacoesAtividadeProvider>
         <DetailPanelProvider>
-          <BrowserRouter>
+          <BrowserRouter basename="/execution-compass">
             <AppLayout>
               <Routes>
                 <Route path="/" element={<HomePage />} />
